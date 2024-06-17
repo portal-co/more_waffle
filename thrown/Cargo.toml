@@ -1,0 +1,11 @@
+[package]
+name = "thrown"
+version = "0.1.0"
+edition = "2021"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+anyhow = "1.0.86"
+portal-pc-waffle.workspace = true
+waffle-ast = { version = "0.1.0", path = "../waffle-ast" }
