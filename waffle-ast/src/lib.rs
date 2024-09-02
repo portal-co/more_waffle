@@ -2,6 +2,7 @@ use waffle::{op_traits::op_outputs, Block, FunctionBody, Module, Operator, Type,
 
 pub mod bulk_memory_lowering;
 pub mod fcopy;
+
 pub fn add_op(f: &mut FunctionBody, args: &[Value], rets: &[Type], op: Operator) -> Value {
     let args = f.arg_pool.from_iter(args.iter().map(|a| *a));
     let rets = f.type_pool.from_iter(rets.iter().map(|a| *a));
