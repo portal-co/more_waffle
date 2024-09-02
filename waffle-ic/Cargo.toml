@@ -1,12 +1,12 @@
 [package]
-name = "waffle-ast"
-version = "0.1.1"
+name = "waffle-ic"
+version = "0.1.0"
 edition = "2021"
-license = "CC0-1.0"
-description = "AST utilities for waffle"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
 anyhow = "1.0.86"
+
 portal-pc-waffle.workspace = true
+waffle-ast = { version = "0.1.0", path = "../waffle-ast" }
