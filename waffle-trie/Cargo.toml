@@ -2,6 +2,8 @@
 name = "waffle-trie"
 version = "0.1.2"
 edition = "2021"
+license = "CC0-1.0"
+description = "Trie mapping for waffle"
 
 [dependencies]
 anyhow = "1.0.86"
