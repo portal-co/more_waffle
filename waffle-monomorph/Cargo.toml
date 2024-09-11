@@ -1,0 +1,8 @@
+[package]
+name = "waffle-monomorph"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+anyhow = "1.0.86"
+portal-pc-waffle.workspace = true

@@ -109,6 +109,12 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "b3d1d046238990b9cf5bcde22a3fb3584ee5cf65fb2765f454ed428c7a0063da"
 
 [[package]]
+name = "arena-traits"
+version = "0.1.2"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "33fdeadfcf04c197a228febcc9550d95e28f3c8e20e045fca3a5bbb36582737e"
+
+[[package]]
 name = "atty"
 version = "0.2.14"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -266,6 +272,15 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "2acce4a10f12dc2fb14a218589d4f1f62ef011b2d0cc4b3cb1bba8e94da14649"
 
 [[package]]
+name = "fid-rs"
+version = "0.2.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "a6956a1e60e2d1412b44b4169d44a03dae518f8583d3e10090c912c105e48447"
+dependencies = [
+ "rayon",
+]
+
+[[package]]
 name = "flate2"
 version = "1.0.30"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -370,6 +385,15 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "90ed8c1e510134f979dbc4f070f87d4313098b704861a105fe34231c70a3901c"
 
 [[package]]
+name = "louds-rs"
+version = "0.7.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "936de6c22f08e7135a921f8ada907acd0d88880c4f42b5591f634b9f1dd8e07f"
+dependencies = [
+ "fid-rs",
+]
+
+[[package]]
 name = "memchr"
 version = "2.7.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -418,12 +442,13 @@ checksum = "57c0d7b74b563b49d38dae00a0c37d4d6de9b432382b2892f0574ddcae73fd0a"
 
 [[package]]
 name = "portal-pc-waffle"
-version = "0.0.28+portal"
+version = "0.0.29+portal"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "7a70cc1807ada49997a6ce7e7743f991a920acb279fc64b75ba52cae1213c64c"
+checksum = "cecd9af0ff57756c401fe6647c366735d5b794a6ed15a188df342bf73ddc6898"
 dependencies = [
  "addr2line",
  "anyhow",
+ "arena-traits",
  "either",
  "env_logger",
  "fxhash",
@@ -435,6 +460,7 @@ dependencies = [
  "rayon",
  "serde",
  "smallvec",
+ "ssa-traits",
  "stacker",
  "structopt",
  "wasm-encoder",
@@ -591,6 +617,17 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "3c5e1a9a646d36c3599cd173a41282daf47c44583ad367b8e6837255952e5c67"
 
 [[package]]
+name = "ssa-traits"
+version = "0.1.3"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "8a15f32129ee532d9a415a25d2ba519acbc12214b22459b6edcd13b3d121ea6c"
+dependencies = [
+ "anyhow",
+ "arena-traits",
+ "either",
+]
+
+[[package]]
 name = "stable_deref_trait"
 version = "1.2.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -668,12 +705,29 @@ dependencies = [
 ]
 
 [[package]]
+name = "tcore"
+version = "0.1.0"
+dependencies = [
+ "anyhow",
+ "portal-pc-waffle",
+]
+
+[[package]]
 name = "textwrap"
 version = "0.11.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "d326610f408c7a4eb6f51c37c330e496b08506c9457c9d34287ecc38809fb060"
 dependencies = [
  "unicode-width",
+]
+
+[[package]]
+name = "trie-rs"
+version = "0.4.2"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "f6f88f4b0a1ebd6c3d16be3e45eb0e8089372ccadd88849b7ca162ba64b5e6f6"
+dependencies = [
+ "louds-rs",
 ]
 
 [[package]]
@@ -728,6 +782,25 @@ version = "0.1.1"
 dependencies = [
  "anyhow",
  "portal-pc-waffle",
+]
+
+[[package]]
+name = "waffle-splice"
+version = "0.1.0"
+dependencies = [
+ "anyhow",
+ "portal-pc-waffle",
+ "waffle-ast",
+]
+
+[[package]]
+name = "waffle-trie"
+version = "0.1.0"
+dependencies = [
+ "anyhow",
+ "portal-pc-waffle",
+ "trie-rs",
+ "waffle-ast",
 ]
 
 [[package]]

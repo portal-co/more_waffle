@@ -2,8 +2,9 @@ use std::iter::{empty, once};
 
 use anyhow::Context;
 use waffle::{BlockTarget, ExportKind, Operator, Terminator};
+use waffle_ast::Handler;
 
-use crate::Handler;
+// use crate::Handler;
 
 pub struct Mapper {}
 impl Handler for Mapper {

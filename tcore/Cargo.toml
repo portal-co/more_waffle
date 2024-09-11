@@ -1,0 +1,11 @@
+[package]
+name = "tcore"
+version = "0.1.0"
+edition = "2021"
+license = "CC0"
+description = "Performs tail call optimization on a WAFFLE module"
+
+[dependencies]
+anyhow = "1.0.86"
+
+portal-pc-waffle.workspace = true

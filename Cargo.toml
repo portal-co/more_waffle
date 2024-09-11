@@ -1,9 +1,9 @@
 [workspace]
-members=[  "waffle-ast"] 
+members=[  "waffle-ast", "waffle-trie","tcore","waffle-splice"] 
 # "fast-instantiate", "grunk", "thrown", "waffle-splice", "wasm-multi-memory-polyfill","waffle-ic", "wasm-multi-memory-macro"
 resolver="2"
 
 [workspace.dependencies]
 
 # waffle = {git="https://github.com/portal-co/waffle-.git",branch="pr/changes2"}
-portal-pc-waffle = {version="0.0.28+portal"}
+portal-pc-waffle = {version="0.0.29+portal"}

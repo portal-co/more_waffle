@@ -1,0 +1,9 @@
+[package]
+name = "waffle-wasip1-stub"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+anyhow = "1.0.86"
+portal-pc-waffle.workspace = true
+waffle-ast = { version = "0.1.1", path = "../waffle-ast" }

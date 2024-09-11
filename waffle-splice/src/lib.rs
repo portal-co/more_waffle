@@ -7,20 +7,10 @@ use waffle::{util::new_sig, Block, Value};
 use waffle_ast::{fcopy::Obfuscate, results_ref_2};
 pub mod mapper;
 
-pub trait Handler {
-    fn modify(
-        &mut self,
-        m: &mut Module,
-        x: &mut Operator,
-        f: &mut FunctionBody,
-        args: &mut [Value],
-        k: &mut Block,
-    ) -> anyhow::Result<()>;
-}
 pub fn splice_op(
     m: &mut Module,
     mut x: Operator,
-    h: &mut impl Handler,
+    // h: &mut impl Handler,
     o: &mut impl Obfuscate,
 ) -> anyhow::Result<Func> {
     let ins = op_inputs(&m, None, &x)?;
@@ -60,7 +50,7 @@ pub fn splice_op(
         _ => {
             let mut k = body.entry;
             let mut args: Vec<_> = body.blocks[body.entry].params.iter().map(|a| a.1).collect();
-            h.modify(m, &mut x, &mut body, &mut args, &mut k)?;
+            // h.modify(m, &mut x, &mut body, &mut args, &mut k)?;
             // let vs = body.arg_pool.from_iter(args.into_iter());
             // let ts = body.type_pool.from_iter(outs.iter().map(|a| *a));
             // let a = body.add_value(crate::ValueDef::Operator(x, vs, ts));
@@ -76,58 +66,103 @@ pub fn splice_op(
         .push(waffle::FuncDecl::Body(sig, x.to_string(), body)));
 }
 pub type SpliceCache = HashMap<Operator, Func>;
-pub fn splice_func(
-    m: &mut Module,
-    f: &mut FunctionBody,
-    k: &mut SpliceCache,
-    h: &mut impl Handler,
-    ob: &mut impl Obfuscate,
-) -> anyhow::Result<()> {
-    for v in f.values.values_mut() {
-        let ValueDef::Operator(o, _, _) = v else {
-            continue;
-        };
+pub struct Splicer<O: Obfuscate,S: Obfuscate> {
+    pub wrapped: O,
+    pub splop: S,
+    pub cache: SpliceCache,
+}
+impl<O: Obfuscate,S: Obfuscate> Obfuscate for Splicer<O,S> {
+    fn obf(
+        &mut self,
+        mut o: Operator,
+        f: &mut FunctionBody,
+        b: Block,
+        args: &[Value],
+        types: &[waffle::Type],
+        module: &mut Module,
+    ) -> anyhow::Result<(Value, Block)> {
         if let Operator::Select = o {
-            continue;
+            return self.wrapped.obf(o, f, b, args, types, module);
         }
-        if waffle::op_traits::op_rematerialize(o) {
-            continue;
-        }
-        if let Operator::Call { function_index } = o {
-            continue;
-        }
-        let f = k.get(&*o);
-        let f = match f {
+        // if waffle::op_traits::op_rematerialize(&o) {
+        //     return self.wrapped.obf(o, f, b, args, types, module);
+        // }
+        // if let Operator::Call { function_index } = o {
+        //     return self.wrapped.obf(o, f, b, args, types, module);
+        // }
+        let fun = self.cache.get(&o);
+        let fun = match fun {
             Some(f) => *f,
             None => {
-                let s = splice_op(m, o.clone(), &mut *h, &mut *ob)?;
-                k.insert(o.clone(), s);
+                let s = splice_op(module, o.clone(), &mut self.splop)?;
+                self.cache.insert(o.clone(), s);
                 s
             }
         };
-        *o = Operator::Call { function_index: f };
+        return self.wrapped.obf(
+            Operator::Call {
+                function_index: fun,
+            },
+            f,
+            b,
+            args,
+            types,
+            module,
+        );
     }
-    return Ok(());
 }
-pub fn splice_module(
-    m: &mut Module,
-    h: &mut impl Handler,
-    o: &mut impl Obfuscate,
-) -> anyhow::Result<()> {
-    let mut b = BTreeMap::new();
-    let mut cache = SpliceCache::new();
-    for (f, d) in m.funcs.entries() {
-        if let Some(d) = d.body() {
-            let d = d.clone();
-            b.insert(f, d);
-        }
-    }
-    //let c = b.clone();
-    for (k, v) in b.iter_mut() {
-        splice_func(m, v, &mut cache, &mut *h, &mut *o)?;
-    }
-    for (k, v) in b {
-        *m.funcs[k].body_mut().unwrap() = v;
-    }
-    return Ok(());
-}
+// pub fn splice_func(
+//     m: &mut Module,
+//     f: &mut FunctionBody,
+//     k: &mut SpliceCache,
+//     // h: &mut impl Handler,
+//     ob: &mut impl Obfuscate,
+// ) -> anyhow::Result<()> {
+//     for v in f.values.values_mut() {
+//         let ValueDef::Operator(o, _, _) = v else {
+//             continue;
+//         };
+//         if let Operator::Select = o {
+//             continue;
+//         }
+//         if waffle::op_traits::op_rematerialize(o) {
+//             continue;
+//         }
+//         if let Operator::Call { function_index } = o {
+//             continue;
+//         }
+//         let f = k.get(&*o);
+//         let f = match f {
+//             Some(f) => *f,
+//             None => {
+//                 let s = splice_op(m, o.clone(), &mut *ob)?;
+//                 k.insert(o.clone(), s);
+//                 s
+//             }
+//         };
+//         *o = Operator::Call { function_index: f };
+//     }
+//     return Ok(());
+// }
+// pub fn splice_module(
+//     m: &mut Module,
+//     // h: &mut impl Handler,
+//     o: &mut impl Obfuscate,
+// ) -> anyhow::Result<()> {
+//     let mut b = BTreeMap::new();
+//     let mut cache = SpliceCache::new();
+//     for (f, d) in m.funcs.entries() {
+//         if let Some(d) = d.body() {
+//             let d = d.clone();
+//             b.insert(f, d);
+//         }
+//     }
+//     //let c = b.clone();
+//     for (k, v) in b.iter_mut() {
+//         splice_func(m, v, &mut cache, &mut *o)?;
+//     }
+//     for (k, v) in b {
+//         *m.funcs[k].body_mut().unwrap() = v;
+//     }
+//     return Ok(());
+// }
