@@ -73,13 +73,13 @@ pub fn tweak_value(
         ValueDef::PickOutput(v, _, _) => m(v),
         ValueDef::Alias(v) => m(v),
         ValueDef::Placeholder(_) => todo!(),
-        ValueDef::Trace(_, l) => {
-            let mut ls = ba.arg_pool[*l].to_vec();
-            for v in ls.iter_mut() {
-                m(v)
-            }
-            *l = f.arg_pool.from_iter(ls.into_iter());
-        }
+        // ValueDef::Trace(_, l) => {
+        //     let mut ls = ba.arg_pool[*l].to_vec();
+        //     for v in ls.iter_mut() {
+        //         m(v)
+        //     }
+        //     *l = f.arg_pool.from_iter(ls.into_iter());
+        // }
         ValueDef::None => {}
     }
 }
@@ -310,7 +310,7 @@ pub fn sanity(body: &FunctionBody) {
     for block in body.blocks.iter() {
         for &inst in &body.blocks[block].insts {
             match &body.values[inst] {
-                &ValueDef::Operator(_, args, _) | &ValueDef::Trace(_, args) => {
+                &ValueDef::Operator(_, args, _)=> {
                     for &arg in &body.arg_pool[args] {
                         let arg = body.resolve_alias(arg);
                         uses.insert(arg);

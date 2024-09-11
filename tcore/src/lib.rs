@@ -405,7 +405,7 @@ pub fn tcore_pass(
                             continue;
                         }
                         ValueDef::Placeholder(_) => todo!(),
-                        ValueDef::Trace(_, _) => todo!(),
+                        // ValueDef::Trace(_, _) => todo!(),
                         ValueDef::None => continue 'gather,
                     }
                     break;
