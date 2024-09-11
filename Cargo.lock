@@ -706,7 +706,7 @@ dependencies = [
 
 [[package]]
 name = "tcore"
-version = "0.1.0"
+version = "0.1.2"
 dependencies = [
  "anyhow",
  "portal-pc-waffle",
@@ -778,7 +778,7 @@ checksum = "49874b5167b65d7193b8aba1567f5c7d93d001cafc34600cee003eda787e483f"
 
 [[package]]
 name = "waffle-ast"
-version = "0.1.1"
+version = "0.1.2"
 dependencies = [
  "anyhow",
  "portal-pc-waffle",
@@ -786,7 +786,7 @@ dependencies = [
 
 [[package]]
 name = "waffle-splice"
-version = "0.1.0"
+version = "0.1.2"
 dependencies = [
  "anyhow",
  "portal-pc-waffle",
@@ -795,7 +795,7 @@ dependencies = [
 
 [[package]]
 name = "waffle-trie"
-version = "0.1.0"
+version = "0.1.2"
 dependencies = [
  "anyhow",
  "portal-pc-waffle",
