@@ -2,7 +2,7 @@
 name = "tcore"
 version = "0.2.0"
 edition = "2021"
-license = "CC0"
+license = "CC0-1.0"
 description = "Performs tail call optimization on a WAFFLE module"
 
 [dependencies]
