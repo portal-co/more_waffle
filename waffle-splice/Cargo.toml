@@ -1,6 +1,6 @@
 [package]
 name = "waffle-splice"
-version = "0.1.2"
+version = "0.2.0"
 edition = "2021"
 license = "CC0-1.0"
 description = "Rewrite WAFFLE operations"
@@ -10,4 +10,4 @@ description = "Rewrite WAFFLE operations"
 [dependencies]
 anyhow = "1.0.86"
 portal-pc-waffle.workspace = true
-waffle-ast = { version = "0.1.0", path = "../waffle-ast" }
+waffle-ast = { version = "0.2.0", path = "../waffle-ast" }

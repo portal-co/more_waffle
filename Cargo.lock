@@ -442,9 +442,9 @@ checksum = "57c0d7b74b563b49d38dae00a0c37d4d6de9b432382b2892f0574ddcae73fd0a"
 
 [[package]]
 name = "portal-pc-waffle"
-version = "0.0.29+portal"
+version = "0.1.0+portal"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "cecd9af0ff57756c401fe6647c366735d5b794a6ed15a188df342bf73ddc6898"
+checksum = "fd7eb3319c3c2f060fc1a925c5d4c41175e0d6e37fe7c6eb790877c8ad616520"
 dependencies = [
  "addr2line",
  "anyhow",
@@ -706,7 +706,7 @@ dependencies = [
 
 [[package]]
 name = "tcore"
-version = "0.1.2"
+version = "0.2.0"
 dependencies = [
  "anyhow",
  "portal-pc-waffle",
@@ -778,7 +778,7 @@ checksum = "49874b5167b65d7193b8aba1567f5c7d93d001cafc34600cee003eda787e483f"
 
 [[package]]
 name = "waffle-ast"
-version = "0.1.2"
+version = "0.2.0"
 dependencies = [
  "anyhow",
  "portal-pc-waffle",
@@ -786,7 +786,7 @@ dependencies = [
 
 [[package]]
 name = "waffle-splice"
-version = "0.1.2"
+version = "0.2.0"
 dependencies = [
  "anyhow",
  "portal-pc-waffle",
@@ -795,7 +795,7 @@ dependencies = [
 
 [[package]]
 name = "waffle-trie"
-version = "0.1.2"
+version = "0.2.0"
 dependencies = [
  "anyhow",
  "portal-pc-waffle",
