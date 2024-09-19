@@ -1,8 +1,11 @@
+use std::collections::{BTreeMap, BTreeSet};
+
 use anyhow::Context;
+use bimap::BiBTreeMap;
 use fcopy::{obf_fn, DontObf, Obfuscate};
 use waffle::{
-    op_traits::op_outputs, util::new_sig, Block, Export, Func, FunctionBody, Import, ImportKind,
-    Memory, Module, Operator, SignatureData, Type, Value, ValueDef,
+    op_traits::op_outputs, util::new_sig, Block, Export, Func, FuncDecl, FunctionBody, Import,
+    ImportKind, Memory, Module, Operator, SignatureData, Type, Value, ValueDef,
 };
 
 pub mod bulk_memory_lowering;
@@ -122,11 +125,11 @@ pub trait Handler {
         k: &mut Block,
     ) -> anyhow::Result<()>;
 }
-pub struct Handle<H,O>{
+pub struct Handle<H, O> {
     pub handler: H,
     pub obf: O,
 }
-impl<H: Handler,O: Obfuscate> Obfuscate for Handle<H,O>{
+impl<H: Handler, O: Obfuscate> Obfuscate for Handle<H, O> {
     fn obf(
         &mut self,
         mut o: Operator,
@@ -234,9 +237,46 @@ impl Obfuscate for Stamp {
         return DontObf {}.obf(o, f, b, args, types, module);
     }
 }
-pub fn stamp(m: &mut Module) -> anyhow::Result<()>{
-    for f in m.funcs.iter().collect::<Vec<_>>(){
-        obf_fn(m, f, &mut Stamp{func: f})?;
+pub fn stamp(m: &mut Module) -> anyhow::Result<()> {
+    for f in m.funcs.iter().collect::<Vec<_>>() {
+        obf_fn(m, f, &mut Stamp { func: f })?;
     }
     Ok(())
+}
+pub fn collect_jmpfns(m: &mut Module) -> BiBTreeMap<(Func, Block), Func> {
+    let mut fns = m
+        .funcs
+        .entries()
+        .filter(|(_, b)| matches!(b, FuncDecl::Body(_, _, _)))
+        .map(|a| a.0)
+        .collect::<BTreeSet<_>>();
+    let mut res = BiBTreeMap::new();
+    for f in fns {
+        let n = m.funcs[f].name().to_owned();
+        let body = m.funcs[f].body().unwrap().clone();
+        let mut map = BTreeMap::new();
+        for k in body.blocks.iter() {
+            if k == body.entry {
+                map.insert(k, f);
+                continue;
+            }
+            let mut b2 = body.clone();
+            b2.entry = k;
+            let s = new_sig(
+                m,
+                SignatureData {
+                    params: b2.blocks[k].params.iter().map(|a| a.0).collect(),
+                    returns: b2.rets.clone(),
+                },
+            );
+            let g = m.funcs.push(FuncDecl::Body(s, format!("{n}~{k}"), b2));
+            map.insert(k, g);
+        }
+        for k in body.blocks.iter() {
+            for (a, m) in map.iter() {
+                res.insert((*m,k), *map.get(&k).unwrap());
+            }
+        }
+    }
+    return res;
 }

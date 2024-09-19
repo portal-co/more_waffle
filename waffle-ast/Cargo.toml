@@ -9,4 +9,5 @@ description = "AST utilities for waffle"
 
 [dependencies]
 anyhow = "1.0.86"
+bimap = "0.6.3"
 portal-pc-waffle.workspace = true
