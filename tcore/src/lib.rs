@@ -1,19 +1,29 @@
-use std::collections::{BTreeMap, BTreeSet};
+use std::{
+    collections::{BTreeMap, BTreeSet},
+    mem::take,
+};
 
 use anyhow::{Context, Ok};
+// use fcopy::obf_mod;
+use waffle_ast::{
+    bulk_memory_lowering::{Reload, Warp},
+    fcopy::obf_mod,
+};
 // use goatf2::JustNormalCFF;
 // use crate::more::Flix;
 use waffle::{
+    copying::module::tree_shake,
     entity::{EntityRef, PerEntity},
-    passes, BlockTarget, Func, FuncDecl, FunctionBody, Module, Operator, Signature, Table,
-    Terminator, Type, ValueDef,
+    passes, BlockTarget, ExportKind, Func, FuncDecl, FunctionBody, Import, ImportKind, Module,
+    Operator, Signature, Table, Terminator, Type, ValueDef,
 };
 use waffle::{SignatureData, Value};
 
-use crate::fcopy::DontObf;
-pub mod fcopy;
+// use crate::fcopy::DontObf;
+pub use waffle_ast::fcopy;
+use waffle_ast::fcopy::DontObf;
+// pub mod fcopy;
 pub mod unswitch;
-
 
 pub fn results_ref_2(f: &mut FunctionBody, c: Value) -> Vec<Value> {
     let c = f.resolve_and_update_alias(c);
@@ -100,6 +110,70 @@ pub fn trampoline_module(m: &mut Module, seal: bool) -> anyhow::Result<()> {
     for (k, v) in b {
         *m.funcs[k].body_mut().unwrap() = v;
     }
+    return Ok(());
+}
+pub fn slice_module(m: &mut Module) -> anyhow::Result<()> {
+    trampoline_module(m, true)?;
+    obf_mod(
+        m,
+        &mut Reload {
+            wrapped: Warp {
+                all: Default::default(),
+            },
+        },
+    )?;
+    for mut i in take(&mut m.imports) {
+        if i.module == "$$eal/mem_base" {
+            if let Some(ExportKind::Memory(memory)) = m.exports.iter().find_map(|x| {
+                if x.name == i.name {
+                    Some(x.kind.clone())
+                } else {
+                    None
+                }
+            }) {
+                let mut total = vec![];
+                for n in &m.memories[memory].segments {
+                    total.resize(n.offset + n.data.len(), 0u8);
+                    total[n.offset..][..n.data.len()].copy_from_slice(&n.data);
+                }
+                if let ImportKind::Func(f) = i.kind {
+                    let s = m.funcs[f].sig();
+                    // let o = replace(f, p);
+                    let mut b = FunctionBody::new(&m, s);
+                    let mut k = b.entry;
+                    let (o, y) = match &b.rets[0] {
+                        Type::I32 => (
+                            Operator::I32Const {
+                                value: total.len() as u32,
+                            },
+                            Type::I32,
+                        ),
+                        Type::I64 => (
+                            Operator::I64Const {
+                                value: total.len() as u64,
+                            },
+                            Type::I64,
+                        ),
+                        _ => anyhow::bail!("invalid type"),
+                    };
+                    let v = b.add_op(k, o, &[], &[y]);
+                    b.set_terminator(k, Terminator::Return { values: vec![v] });
+                    m.funcs[f] = FuncDecl::Body(s, format!("_seal"), b);
+                    continue;
+                }
+            }
+        }
+        m.imports.push(i);
+    }
+    for (mem, data) in m.memories.entries_mut() {
+        data.segments = vec![];
+        m.imports.push(Import {
+            module: format!("shim"),
+            name: format!("{mem}"),
+            kind: waffle::ImportKind::Memory(mem),
+        });
+    }
+    tree_shake(m)?;
     return Ok(());
 }
 pub fn trampoline_bytes(a: &[u8], seal: bool) -> anyhow::Result<Vec<u8>> {

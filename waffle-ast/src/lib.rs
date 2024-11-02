@@ -5,7 +5,7 @@ use bimap::BiBTreeMap;
 use fcopy::{obf_fn, DontObf, Obfuscate};
 use waffle::{
     op_traits::op_outputs, util::new_sig, Block, Export, Func, FuncDecl, FunctionBody, Import,
-    ImportKind, Memory, Module, Operator, SignatureData, Type, Value, ValueDef,
+    ImportKind, Memory, Module, Operator, Signature, SignatureData, Type, Value, ValueDef,
 };
 
 pub mod bulk_memory_lowering;
@@ -274,9 +274,106 @@ pub fn collect_jmpfns(m: &mut Module) -> BiBTreeMap<(Func, Block), Func> {
         }
         for k in body.blocks.iter() {
             for (a, m) in map.iter() {
-                res.insert((*m,k), *map.get(&k).unwrap());
+                res.insert((*m, k), *map.get(&k).unwrap());
             }
         }
     }
     return res;
+}
+pub fn encode_ty(x: Type, m: &Module) -> String {
+    match x {
+        Type::I32 => format!("i"),
+        Type::I64 => format!("l"),
+        Type::F32 => format!("f"),
+        Type::F64 => format!("d"),
+        Type::V128 => format!("v"),
+        Type::FuncRef => format!("n"),
+        Type::ExternRef => format!("x"),
+        Type::TypedFuncRef {
+            nullable,
+            sig_index,
+        } => {
+            format!(
+                "F{}[{}]",
+                if nullable { "n" } else { "a" },
+                encode_sig(sig_index, m)
+            )
+        }
+    }
+}
+pub fn encode_sig(s: Signature, m: &Module) -> String {
+    let s = &m.signatures[s];
+    format!(
+        "{}_{}",
+        s.params
+            .iter()
+            .cloned()
+            .map(|a| encode_ty(a, m))
+            .flat_map(|a| a.chars().collect::<Vec<_>>())
+            .collect::<String>(),
+        s.returns
+            .iter()
+            .cloned()
+            .map(|a| encode_ty(a, m))
+            .flat_map(|a| a.chars().collect::<Vec<_>>())
+            .collect::<String>()
+    )
+}
+pub fn decode_type<'a>(x: &'a str, m: &mut Module) -> Option<(Type, &'a str)> {
+    for (a, b) in [
+        ("i", Type::I32),
+        ("l", Type::I64),
+        ("f", Type::F32),
+        ("d", Type::F64),
+        ("n", Type::FuncRef),
+        ("x", Type::ExternRef),
+    ] {
+        if let Some(a) = x.strip_prefix(a) {
+            return Some((b, a));
+        }
+    }
+    if let Some(x) = x.strip_prefix("F") {
+        if let Some((x, nullable)) = [("n", true), ("a", false)]
+            .into_iter()
+            .find_map(|(a, b)| x.strip_prefix(a).map(|c| (c, b)))
+        {
+            if let Some(x) = x.strip_prefix("[") {
+                if let Some((s, x)) = decode_sig(x, m) {
+                    if let Some(x) = x.strip_prefix("]") {
+                        return Some((
+                            Type::TypedFuncRef {
+                                nullable,
+                                sig_index: s,
+                            },
+                            x,
+                        ));
+                    }
+                }
+            }
+        }
+    }
+    return None;
+}
+pub fn decode_sig<'a>(mut x: &'a str, m: &mut Module) -> Option<(Signature, &'a str)> {
+    let mut params = vec![];
+    while let Some((t, y)) = decode_type(x, m) {
+        x = y;
+        params.push(t)
+    }
+    x = x.strip_prefix("_")?;
+    let mut rets = vec![];
+    while let Some((t, y)) = decode_type(x, m) {
+        x = y;
+        rets.push(t)
+    }
+    return Some((
+        new_sig(
+            m,
+            SignatureData {
+                params,
+                returns: rets,
+            },
+        ),
+        x,
+    ));
 }

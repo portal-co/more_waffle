@@ -110,9 +110,9 @@ checksum = "b3d1d046238990b9cf5bcde22a3fb3584ee5cf65fb2765f454ed428c7a0063da"
 
 [[package]]
 name = "arena-traits"
-version = "0.1.2"
+version = "0.2.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "33fdeadfcf04c197a228febcc9550d95e28f3c8e20e045fca3a5bbb36582737e"
+checksum = "324e412f1771dc6c84a2a53e5c19cf92bd7ea05b5eeddb3f80c18e3473374ab4"
 
 [[package]]
 name = "atty"
@@ -160,6 +160,16 @@ name = "cfg-if"
 version = "1.0.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "baf1de4339761588bc0619e3cbc0120ee582ebb74b53b4efbf79117bd2da40fd"
+
+[[package]]
+name = "cfg-traits"
+version = "0.2.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "1a3dfb49182ea18b9cc93b5d43cf340b519af6ca40b90fd5548c46471e19e9fb"
+dependencies = [
+ "arena-traits",
+ "either",
+]
 
 [[package]]
 name = "clap"
@@ -448,13 +458,14 @@ checksum = "57c0d7b74b563b49d38dae00a0c37d4d6de9b432382b2892f0574ddcae73fd0a"
 
 [[package]]
 name = "portal-pc-waffle"
-version = "0.1.0+portal"
+version = "0.2.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "fd7eb3319c3c2f060fc1a925c5d4c41175e0d6e37fe7c6eb790877c8ad616520"
+checksum = "900872bee1c1f7abdeb04a197497b0fe9e36f3880aee404008a43c6835b6cebf"
 dependencies = [
  "addr2line",
  "anyhow",
  "arena-traits",
+ "cfg-traits",
  "either",
  "env_logger",
  "fxhash",
@@ -624,12 +635,13 @@ checksum = "3c5e1a9a646d36c3599cd173a41282daf47c44583ad367b8e6837255952e5c67"
 
 [[package]]
 name = "ssa-traits"
-version = "0.1.3"
+version = "0.2.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "8a15f32129ee532d9a415a25d2ba519acbc12214b22459b6edcd13b3d121ea6c"
+checksum = "36d84c7d6066cd100eb6c1d2c7790c9f67db0f41a7d36a4249379e06f11780f2"
 dependencies = [
  "anyhow",
  "arena-traits",
+ "cfg-traits",
  "either",
 ]
 
@@ -716,6 +728,7 @@ version = "0.2.1"
 dependencies = [
  "anyhow",
  "portal-pc-waffle",
+ "waffle-ast",
 ]
 
 [[package]]

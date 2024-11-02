@@ -66,12 +66,13 @@ pub fn splice_op(
         .push(waffle::FuncDecl::Body(sig, x.to_string(), body)));
 }
 pub type SpliceCache = HashMap<Operator, Func>;
-pub struct Splicer<O: Obfuscate,S: Obfuscate> {
+pub struct Splicer<O: Obfuscate,S: Obfuscate,F> {
     pub wrapped: O,
     pub splop: S,
     pub cache: SpliceCache,
+    pub condition: F,
 }
-impl<O: Obfuscate,S: Obfuscate> Obfuscate for Splicer<O,S> {
+impl<O: Obfuscate,S: Obfuscate,F: FnMut(&Operator) -> bool> Obfuscate for Splicer<O,S,F> {
     fn obf(
         &mut self,
         mut o: Operator,
@@ -82,6 +83,9 @@ impl<O: Obfuscate,S: Obfuscate> Obfuscate for Splicer<O,S> {
         module: &mut Module,
     ) -> anyhow::Result<(Value, Block)> {
         if let Operator::Select = o {
+            return self.wrapped.obf(o, f, b, args, types, module);
+        }
+        if !(self.condition)(&o){
             return self.wrapped.obf(o, f, b, args, types, module);
         }
         // if waffle::op_traits::op_rematerialize(&o) {

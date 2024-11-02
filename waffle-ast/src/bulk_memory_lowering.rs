@@ -1,6 +1,16 @@
-use waffle::{BlockTarget, MemoryArg, Module, Operator, Type};
+use std::collections::BTreeMap;
 
-use crate::{add_op, fcopy::Obfuscate, Builder, Expr};
+use anyhow::Context;
+use waffle::{
+    util::new_sig, Block, BlockTarget, Func, FunctionBody, Memory, MemoryArg, Module, Operator,
+    SignatureData, Type,
+};
+
+use crate::{
+    add_op,
+    fcopy::{DontObf, Obfuscate},
+    Builder, Expr,
+};
 
 #[derive(Default, Clone, Copy)]
 pub struct Reload<T> {
@@ -674,5 +684,267 @@ impl Obfuscate for LowerBulkMemory {
                 return Ok((v, b));
             }
         }
+    }
+}
+pub struct Warp {
+    pub all: BTreeMap<(Memory, bool), Func>,
+}
+impl Obfuscate for Warp {
+    fn obf(
+        &mut self,
+        o: Operator,
+        f: &mut waffle::FunctionBody,
+        b: waffle::Block,
+        args: &[waffle::Value],
+        types: &[Type],
+        module: &mut Module,
+    ) -> anyhow::Result<(waffle::Value, waffle::Block)> {
+        if let Operator::I32Load8U { memory } = o {
+            let ty = f.values[args[0]]
+                .ty(&f.type_pool)
+                .context("in getting the type")?;
+            let a = f.add_op(
+                b,
+                match &ty {
+                    Type::I32 => Operator::I32Const {
+                        value: memory.offset as u32,
+                    },
+                    Type::I64 => Operator::I64Const {
+                        value: memory.offset,
+                    },
+                    _ => todo!(),
+                },
+                &[],
+                &[ty],
+            );
+            let a = f.add_op(
+                b,
+                match &ty {
+                    Type::I32 => Operator::I32Add,
+                    Type::I64 => Operator::I64Add,
+                    _ => todo!(),
+                },
+                &[a, args[0]],
+                &[ty],
+            );
+            let mut entry = self.all.entry((memory.memory, false));
+            let entry = entry.or_insert_with_key(|(memory, isStore)| {
+                assert!(!isStore);
+                let mut total = vec![];
+                for n in &module.memories[*memory].segments {
+                    total.resize(n.offset + n.data.len(), 0u8);
+                    total[n.offset..][..n.data.len()].copy_from_slice(&n.data);
+                }
+                let sig = new_sig(
+                    module,
+                    SignatureData {
+                        params: vec![ty.clone()],
+                        returns: vec![Type::I32],
+                    },
+                );
+                let mut b = FunctionBody::new(module, sig);
+                let p = b.blocks[b.entry].params[0].1;
+                let ns: [Block; 256] = std::array::from_fn(|x| {
+                    let x = x as u8;
+                    let r = b.add_block();
+                    let rv = b.add_op(r, Operator::I32Const { value: x as u32 }, &[], &[Type::I32]);
+                    b.set_terminator(r, waffle::Terminator::Return { values: vec![rv] });
+                    return r;
+                });
+                let bak = b.add_block();
+                let a = b.add_op(
+                    bak,
+                    match &ty {
+                        Type::I32 => Operator::I32Const {
+                            value: total.len() as u32,
+                        },
+                        Type::I64 => Operator::I64Const {
+                            value: total.len() as u64,
+                        },
+                        _ => todo!(),
+                    },
+                    &[],
+                    &[ty],
+                );
+                let a = b.add_op(
+                    bak,
+                    match &ty {
+                        Type::I32 => Operator::I32Sub,
+                        Type::I64 => Operator::I64Sub,
+                        _ => todo!(),
+                    },
+                    &[a, p],
+                    &[ty],
+                );
+                let a = b.add_op(
+                    bak,
+                    Operator::I32Load8U {
+                        memory: MemoryArg {
+                            align: 0,
+                            offset: 0,
+                            memory: *memory,
+                        },
+                    },
+                    &[a],
+                    types,
+                );
+                b.set_terminator(bak, waffle::Terminator::Return { values: vec![a] });
+                b.set_terminator(
+                    b.entry,
+                    waffle::Terminator::Select {
+                        value: p,
+                        targets: total
+                            .iter()
+                            .map(|x| ns[*x as usize])
+                            .map(|x| BlockTarget {
+                                block: x,
+                                args: vec![],
+                            })
+                            .collect(),
+                        default: BlockTarget {
+                            block: bak,
+                            args: vec![],
+                        },
+                    },
+                );
+                return module
+                    .funcs
+                    .push(waffle::FuncDecl::Body(sig, format!(""), b));
+            });
+            return DontObf {}.obf(
+                Operator::Call {
+                    function_index: *entry,
+                },
+                f,
+                b,
+                &[a],
+                types,
+                module,
+            );
+        }
+        if let Operator::I32Store8 { memory } = o {
+            let ty = f.values[args[0]]
+                .ty(&f.type_pool)
+                .context("in getting the type")?;
+            let a = f.add_op(
+                b,
+                match &ty {
+                    Type::I32 => Operator::I32Const {
+                        value: memory.offset as u32,
+                    },
+                    Type::I64 => Operator::I64Const {
+                        value: memory.offset,
+                    },
+                    _ => todo!(),
+                },
+                &[],
+                &[ty],
+            );
+            let a = f.add_op(
+                b,
+                match &ty {
+                    Type::I32 => Operator::I32Add,
+                    Type::I64 => Operator::I64Add,
+                    _ => todo!(),
+                },
+                &[a, args[0]],
+                &[ty],
+            );
+            let mut entry = self.all.entry((memory.memory, true));
+            let entry = entry.or_insert_with_key(|(memory, isStore)| {
+                assert!(isStore);
+                let mut total = vec![];
+                for n in &module.memories[*memory].segments {
+                    total.resize(n.offset + n.data.len(), 0u8);
+                    total[n.offset..][..n.data.len()].copy_from_slice(&n.data);
+                }
+                let sig = new_sig(
+                    module,
+                    SignatureData {
+                        params: vec![ty.clone(), Type::I32],
+                        returns: vec![],
+                    },
+                );
+                let mut b = FunctionBody::new(module, sig);
+                let p = b.blocks[b.entry].params[0].1;
+                let p2 = b.blocks[b.entry].params[1].1;
+                let ns: [Block; 256] = std::array::from_fn(|x| {
+                    let x = x as u8;
+                    let r = b.add_block();
+                    b.set_terminator(r, waffle::Terminator::Return { values: vec![] });
+                    return r;
+                });
+                let bak = b.add_block();
+                let a = b.add_op(
+                    bak,
+                    match &ty {
+                        Type::I32 => Operator::I32Const {
+                            value: total.len() as u32,
+                        },
+                        Type::I64 => Operator::I64Const {
+                            value: total.len() as u64,
+                        },
+                        _ => todo!(),
+                    },
+                    &[],
+                    &[ty],
+                );
+                let a = b.add_op(
+                    bak,
+                    match &ty {
+                        Type::I32 => Operator::I32Sub,
+                        Type::I64 => Operator::I64Sub,
+                        _ => todo!(),
+                    },
+                    &[a, p],
+                    &[ty],
+                );
+                let a = b.add_op(
+                    bak,
+                    Operator::I32Store8 {
+                        memory: MemoryArg {
+                            align: 0,
+                            offset: 0,
+                            memory: *memory,
+                        },
+                    },
+                    &[a, p2],
+                    types,
+                );
+                b.set_terminator(bak, waffle::Terminator::Return { values: vec![] });
+                b.set_terminator(
+                    b.entry,
+                    waffle::Terminator::Select {
+                        value: p,
+                        targets: total
+                            .iter()
+                            .map(|x| ns[*x as usize])
+                            .map(|x| BlockTarget {
+                                block: x,
+                                args: vec![],
+                            })
+                            .collect(),
+                        default: BlockTarget {
+                            block: bak,
+                            args: vec![],
+                        },
+                    },
+                );
+                return module
+                    .funcs
+                    .push(waffle::FuncDecl::Body(sig, format!(""), b));
+            });
+            return DontObf {}.obf(
+                Operator::Call {
+                    function_index: *entry,
+                },
+                f,
+                b,
+                &[a, args[1]],
+                types,
+                module,
+            );
+        }
+        return DontObf {}.obf(o, f, b, args, types, module);
     }
 }
