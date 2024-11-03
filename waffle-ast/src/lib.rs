@@ -243,7 +243,10 @@ pub fn stamp(m: &mut Module) -> anyhow::Result<()> {
     }
     Ok(())
 }
-pub fn collect_jmpfns2(m: &mut Module, mut filter: impl FnMut(Func,Block) -> bool) -> BiBTreeMap<(Func, Block), Func> {
+pub fn collect_jmpfns2(
+    m: &mut Module,
+    mut filter: impl FnMut(Func, Block) -> bool,
+) -> BiBTreeMap<(Func, Block), Func> {
     let mut fns = m
         .funcs
         .entries()
@@ -260,7 +263,7 @@ pub fn collect_jmpfns2(m: &mut Module, mut filter: impl FnMut(Func,Block) -> boo
                 map.insert(k, f);
                 continue;
             }
-            if !filter(f,k){
+            if !filter(f, k) {
                 continue;
             }
             let mut b2 = body.clone();
@@ -277,14 +280,16 @@ pub fn collect_jmpfns2(m: &mut Module, mut filter: impl FnMut(Func,Block) -> boo
         }
         for k in body.blocks.iter() {
             for (a, m) in map.iter() {
-                res.insert((*m, k), *map.get(&k).unwrap());
+                if let Some(v) = map.get(&k).cloned() {
+                    res.insert((*m, k), v);
+                }
             }
         }
     }
     return res;
 }
-pub fn collect_jmpfns(m: &mut Module) -> BiBTreeMap<(Func, Block), Func>{
-    return collect_jmpfns2(m,|_,_|true)
+pub fn collect_jmpfns(m: &mut Module) -> BiBTreeMap<(Func, Block), Func> {
+    return collect_jmpfns2(m, |_, _| true);
 }
 pub fn encode_ty(x: Type, m: &Module) -> String {
     match x {
