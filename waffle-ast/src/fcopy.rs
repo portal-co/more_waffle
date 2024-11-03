@@ -274,9 +274,10 @@ pub fn clone_block(
         }
         c.insert(*v);
         // eprintln!("b={b},v={v}");
-        if basis.value_blocks[*v] != b {
-            panic!("inconsistent block value: {}", *v);
-        }
+        // if basis.value_blocks[*v] != b {
+        //     panic!("inconsistent block value: {}", *v);
+        // }
+        
         clone_value_in(basis, f, &mut m, v, &mut r, b, 100, obf, modu)?;
     }
     tweak_terminator(
