@@ -12,7 +12,7 @@ use waffle_ast::{
 // use goatf2::JustNormalCFF;
 // use crate::more::Flix;
 use waffle::{
-    copying::module::tree_shake,
+    copying::{kts::Kts, module::tree_shake},
     entity::{EntityRef, PerEntity},
     passes, BlockTarget, ExportKind, Func, FuncDecl, FunctionBody, Import, ImportKind, Module,
     Operator, Signature, Table, Terminator, Type, ValueDef,
@@ -341,10 +341,12 @@ pub fn tcore_tco_pass(
                 // b.convert_to_max_ssa(None);
                 let mut v = mo.get(&fun).unwrap().clone();
                 v.convert_to_max_ssa(None);
-                let l = crate::fcopy::clone_fn(b, &v, &mut DontObf {}, mo2)?;
-                let e = l.all.get(&mo.get(&fun).unwrap().entry).unwrap();
-                m.insert(fun, *e);
-                *e
+                let e = Kts {
+                    blocks: Default::default(),
+                }
+                .translate(b, &v, v.entry)?;
+                m.insert(fun, e);
+                e
             }
         };
         b.blocks[block].terminator = Terminator::None;

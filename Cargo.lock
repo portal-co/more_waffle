@@ -458,9 +458,9 @@ checksum = "57c0d7b74b563b49d38dae00a0c37d4d6de9b432382b2892f0574ddcae73fd0a"
 
 [[package]]
 name = "portal-pc-waffle"
-version = "0.2.8"
+version = "0.2.9"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "de43ad9e185f7711e29115b4c817fe76215468f80086f0598b82aa25d007d967"
+checksum = "57e688c34658461ce3574394936b4fade8f13e870cc93d831805819c2f82cd03"
 dependencies = [
  "addr2line",
  "anyhow",
