@@ -79,7 +79,7 @@ pub fn tcore(m: &mut Module, do_fuse: bool) -> anyhow::Result<()> {
     }
     let c = b.clone();
     for (k, v) in b.iter_mut() {
-        tcore_tco_pass(&c, m, *k, v)?;
+        tcore_tco_pass(m, *k, v)?;
     }
     if do_fuse {
         let c = b.clone();
@@ -105,9 +105,9 @@ pub fn tcore2(m: &mut Module, mut filter: impl FnMut(Func) -> bool) -> anyhow::R
             b.insert(f, d);
         }
     }
-    let c = b.clone();
+    // let c = b.clone();
     for (k, v) in b.iter_mut() {
-        tcore_tco_pass(&c, m, *k, v)?;
+        tcore_tco_pass(m, *k, v)?;
     }
     // if do_fuse {
     //     let c = b.clone();
@@ -334,7 +334,7 @@ pub fn gen_trampolines(
     return Ok(());
 }
 pub fn tcore_tco_pass(
-    mo: &BTreeMap<Func, FunctionBody>,
+    // mo: &BTreeMap<Func, FunctionBody>,
     mo2: &mut Module,
     f: Func,
     b: &mut FunctionBody,
@@ -356,7 +356,7 @@ pub fn tcore_tco_pass(
             let Terminator::ReturnCall { func, args } = d.terminator.clone() else {
                 continue 'gather;
             };
-            let Some(_) = mo.get(&func) else {
+            let Some(_) = mo2.funcs[func].body() else {
                 continue 'gather;
             };
             break 'gather (bl, func, args);
@@ -367,7 +367,7 @@ pub fn tcore_tco_pass(
             None => {
                 // eprintln!("fun_name={};func={}",mo.funcs[fun].name(),mo.funcs[fun].body().unwrap().display("", Some(mo)));
                 // b.convert_to_max_ssa(None);
-                let mut v = mo.get(&fun).unwrap_or_else(||mo2.funcs[fun].body().unwrap()).clone();
+                let mut v = mo2.funcs[fun].body().unwrap().clone();
                 v.convert_to_max_ssa(None);
                 let e = Kts {
                     blocks: Default::default(),
