@@ -9,4 +9,5 @@ description = "Performs tail call optimization on a WAFFLE module"
 anyhow = "1.0.86"
 
 portal-pc-waffle.workspace = true
+stacker = "0.1.17"
 waffle-ast = { version = "0.3.0", path = "../waffle-ast" }

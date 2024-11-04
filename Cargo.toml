@@ -6,5 +6,5 @@ resolver="2"
 [workspace.dependencies]
 
 # waffle = {git="https://github.com/portal-co/waffle-.git",branch="pr/changes2"}
-portal-pc-waffle = {version="0.2.1+portal"}
+portal-pc-waffle = {version="0.2.8"}
 
