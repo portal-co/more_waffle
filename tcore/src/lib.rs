@@ -92,6 +92,34 @@ pub fn tcore(m: &mut Module, do_fuse: bool) -> anyhow::Result<()> {
     }
     return Ok(());
 }
+pub fn tcore2(m: &mut Module, mut filter: impl FnMut(Func) -> bool) -> anyhow::Result<()> {
+    // let mut m = Module::from_wasm_bytes(a, &Default::default())?;
+    m.expand_all_funcs()?;
+    let mut b = BTreeMap::new();
+    for (f, d) in m.funcs.entries() {
+        if !filter(f){
+            continue;
+        }
+        if let Some(d) = d.body() {
+            let d = d.clone();
+            b.insert(f, d);
+        }
+    }
+    let c = b.clone();
+    for (k, v) in b.iter_mut() {
+        tcore_tco_pass(&c, m, *k, v)?;
+    }
+    // if do_fuse {
+    //     let c = b.clone();
+    //     for (k, v) in b.iter_mut() {
+    //         tcore_pass(&c, *k, v)?;
+    //     }
+    // }
+    for (k, v) in b {
+        *m.funcs[k].body_mut().unwrap() = v;
+    }
+    return Ok(());
+}
 pub type TCache = BTreeMap<(Table, SignatureData), Func>;
 pub fn trampoline_module(m: &mut Module, seal: bool) -> anyhow::Result<()> {
     let mut b = BTreeMap::new();
@@ -339,7 +367,7 @@ pub fn tcore_tco_pass(
             None => {
                 // eprintln!("fun_name={};func={}",mo.funcs[fun].name(),mo.funcs[fun].body().unwrap().display("", Some(mo)));
                 // b.convert_to_max_ssa(None);
-                let mut v = mo.get(&fun).unwrap().clone();
+                let mut v = mo.get(&fun).unwrap_or_else(||mo2.funcs[fun].body().unwrap()).clone();
                 v.convert_to_max_ssa(None);
                 let e = Kts {
                     blocks: Default::default(),
