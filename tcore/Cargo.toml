@@ -1,6 +1,6 @@
 [package]
 name = "tcore"
-version = "0.3.6"
+version = "0.3.7"
 edition = "2021"
 license = "CC0-1.0"
 description = "Performs tail call optimization on a WAFFLE module"

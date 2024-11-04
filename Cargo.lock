@@ -724,7 +724,7 @@ dependencies = [
 
 [[package]]
 name = "tcore"
-version = "0.3.6"
+version = "0.3.7"
 dependencies = [
  "anyhow",
  "portal-pc-waffle",
