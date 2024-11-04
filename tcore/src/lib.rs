@@ -367,7 +367,7 @@ pub fn tcore_tco_pass(
             None => {
                 // eprintln!("fun_name={};func={}",mo.funcs[fun].name(),mo.funcs[fun].body().unwrap().display("", Some(mo)));
                 // b.convert_to_max_ssa(None);
-                let mut v = mo2.funcs[fun].body().unwrap().clone();
+                let mut v = mo2.funcs[fun].body_mut().unwrap();
                 v.convert_to_max_ssa(None);
                 let e = Kts {
                     blocks: Default::default(),
