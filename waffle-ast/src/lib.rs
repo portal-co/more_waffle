@@ -247,13 +247,24 @@ pub fn collect_jmpfns2(
     m: &mut Module,
     mut filter: impl FnMut(Func, Block) -> bool,
 ) -> BiBTreeMap<(Func, Block), Func> {
+    let a = collect_jmpfns3(m, move|_,a,b|filter(a,b));
+    let mut res = BiBTreeMap::new();
+    for (a,b) in a .into_iter(){
+        res.insert(a, b);
+    };
+    return res;
+}
+pub fn collect_jmpfns3(
+    m: &mut Module,
+    mut filter: impl FnMut(&mut Module, Func, Block) -> bool,
+) -> BTreeMap<(Func,Block),Func> {
     let mut fns = m
         .funcs
         .entries()
         .filter(|(_, b)| matches!(b, FuncDecl::Body(_, _, _)))
         .map(|a| a.0)
         .collect::<BTreeSet<_>>();
-    let mut res = BiBTreeMap::new();
+    let mut res = BTreeMap::new();
     for f in fns {
         let n = m.funcs[f].name().to_owned();
         let body = m.funcs[f].body().unwrap().clone();
@@ -263,7 +274,7 @@ pub fn collect_jmpfns2(
                 map.insert(k, f);
                 continue;
             }
-            if !filter(f, k) {
+            if !filter(m, f, k) {
                 continue;
             }
             let mut b2 = body.clone();
