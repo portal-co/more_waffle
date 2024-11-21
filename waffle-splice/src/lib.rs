@@ -15,7 +15,7 @@ pub fn splice_op(
 ) -> anyhow::Result<Func> {
     let ins = op_inputs(&m, None, &x)?;
     let outs = op_outputs(&m, None, &x)?;
-    let sig = SignatureData {
+    let sig = SignatureData::Func {
         params: ins.to_vec(),
         returns: outs.to_vec(),
     };

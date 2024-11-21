@@ -737,7 +737,7 @@ impl Obfuscate for Warp {
                 }
                 let sig = new_sig(
                     module,
-                    SignatureData {
+                    SignatureData::Func {
                         params: vec![ty.clone()],
                         returns: vec![Type::I32],
                     },
@@ -860,7 +860,7 @@ impl Obfuscate for Warp {
                 }
                 let sig = new_sig(
                     module,
-                    SignatureData {
+                    SignatureData::Func {
                         params: vec![ty.clone(), Type::I32],
                         returns: vec![],
                     },

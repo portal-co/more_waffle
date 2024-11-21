@@ -120,11 +120,14 @@ pub fn emit(m: &mut Module) -> anyhow::Result<()> {
             };
             if let ImportKind::Func(f) = i.kind {
                 let s = m.signatures[m.funcs[f].sig()].clone();
+                let SignatureData::Func { params, returns } = s else{
+                    anyhow::bail!("not a func")
+                };
                 let s = new_sig(
                     m,
-                    SignatureData {
-                        returns: s.returns,
-                        params: s.params[1..].iter().cloned().collect(),
+                    SignatureData::Func {
+                        returns: returns,
+                        params: params[1..].iter().cloned().collect(),
                     },
                 );
                 let os = m.funcs[f].sig();
