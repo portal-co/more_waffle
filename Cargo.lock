@@ -571,9 +571,9 @@ checksum = "c2a69ee997a6282f8462abf1e0d8c38c965e968799e912b3bed8c9e8a28c2f9f"
 
 [[package]]
 name = "portal-pc-waffle"
-version = "0.3.0"
+version = "0.3.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "65fce42ee55447466954cd3c94129b1cc778c5377a2ed874e94643451c6270fb"
+checksum = "2515e60cd2d28a3083b4ecc351aa338e0eed3c5700d798b8edf9936516a14781"
 dependencies = [
  "addr2line",
  "anyhow",
@@ -927,7 +927,7 @@ checksum = "49874b5167b65d7193b8aba1567f5c7d93d001cafc34600cee003eda787e483f"
 
 [[package]]
 name = "waffle-ast"
-version = "0.4.0"
+version = "0.4.1"
 dependencies = [
  "anyhow",
  "bimap",

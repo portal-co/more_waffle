@@ -10,6 +10,7 @@ use waffle::{
 
 pub mod bulk_memory_lowering;
 pub mod fcopy;
+pub mod tutils;
 
 pub fn add_op(f: &mut FunctionBody, args: &[Value], rets: &[Type], op: Operator) -> Value {
     let args = f.arg_pool.from_iter(args.iter().map(|a| *a));
