@@ -1,4 +1,6 @@
-use std::iter::once;
+use core::iter::once;
+use alloc::vec;
+use alloc::vec::Vec;
 
 use waffle::{BlockTarget, Table};
 

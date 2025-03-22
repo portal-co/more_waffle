@@ -1,4 +1,11 @@
-use std::collections::{BTreeMap, BTreeSet};
+#![no_std]
+#[macro_use]
+extern crate alloc;
+use alloc::borrow::ToOwned;
+use alloc::boxed::Box;
+use alloc::collections::{BTreeMap, BTreeSet};
+use alloc::vec;
+use alloc::vec::Vec;
 
 use anyhow::Context;
 use bimap::BiBTreeMap;
@@ -183,7 +190,7 @@ impl Obfuscate for Stamp {
                     .context("in getting the main memory")?;
                 if module_name == "stamp" && name == "mark_export" {
                     if let Some(b) = find_val(f, args[0], args[1], module, mem)
-                        .and_then(|a| std::str::from_utf8(a).ok())
+                        .and_then(|a| core::str::from_utf8(a).ok())
                     {
                         let b = b.to_owned();
                         module.exports.push(Export {
@@ -194,11 +201,11 @@ impl Obfuscate for Stamp {
                 }
                 if module_name == "stamp/import" {
                     if let Some(bm) = find_val(f, args[0], args[1], module, mem)
-                        .and_then(|a| std::str::from_utf8(a).ok())
+                        .and_then(|a| core::str::from_utf8(a).ok())
                     {
                         let bm = bm.to_owned();
                         if let Some(bn) = find_val(f, args[2], args[3], module, mem)
-                            .and_then(|a| std::str::from_utf8(a).ok())
+                            .and_then(|a| core::str::from_utf8(a).ok())
                         {
                             let bn = bn.to_owned();
                             let args = &args[4..];

@@ -1,5 +1,7 @@
-use std::collections::BTreeMap;
+use alloc::{borrow::ToOwned, collections::BTreeMap};
 
+use alloc::vec;
+use alloc::vec::Vec;
 use anyhow::Context;
 use waffle::{
     util::new_sig, Block, BlockTarget, Func, FunctionBody, Memory, MemoryArg, Module, Operator,
@@ -11,6 +13,7 @@ use crate::{
     fcopy::{DontObf, Obfuscate},
     Builder, Expr,
 };
+
 
 #[derive(Default, Clone, Copy)]
 pub struct Reload<T> {
@@ -744,7 +747,7 @@ impl Obfuscate for Warp {
                 );
                 let mut b = FunctionBody::new(module, sig);
                 let p = b.blocks[b.entry].params[0].1;
-                let ns: [Block; 256] = std::array::from_fn(|x| {
+                let ns: [Block; 256] = core::array::from_fn(|x| {
                     let x = x as u8;
                     let r = b.add_block();
                     let rv = b.add_op(r, Operator::I32Const { value: x as u32 }, &[], &[Type::I32]);
@@ -868,7 +871,7 @@ impl Obfuscate for Warp {
                 let mut b = FunctionBody::new(module, sig);
                 let p = b.blocks[b.entry].params[0].1;
                 let p2 = b.blocks[b.entry].params[1].1;
-                let ns: [Block; 256] = std::array::from_fn(|x| {
+                let ns: [Block; 256] = core::array::from_fn(|x| {
                     let x = x as u8;
                     let r = b.add_block();
                     b.set_terminator(r, waffle::Terminator::Return { values: vec![] });
