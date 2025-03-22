@@ -1,10 +1,10 @@
 [package]
 name = "waffle-unistub"
-version = "0.4.3"
+version = "0.5.0"
 edition = "2021"
 license = "CC0-1.0"
 description = "Universal stubs for waffle"
 
 [dependencies]
 portal-pc-waffle.workspace = true
-waffle-ast = { version = "0.4.2", path = "../waffle-ast" }
+waffle-ast = { version = "0.5.0", path = "../waffle-ast" }

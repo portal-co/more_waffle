@@ -439,7 +439,7 @@ dependencies = [
 
 [[package]]
 name = "tcore"
-version = "0.4.3"
+version = "0.5.0"
 dependencies = [
  "anyhow",
  "portal-pc-waffle",
@@ -464,7 +464,7 @@ checksum = "3354b9ac3fae1ff6755cb6db53683adb661634f67557942dea4facebec0fee4b"
 
 [[package]]
 name = "waffle-ast"
-version = "0.4.3"
+version = "0.5.0"
 dependencies = [
  "anyhow",
  "bimap",
@@ -473,7 +473,7 @@ dependencies = [
 
 [[package]]
 name = "waffle-splice"
-version = "0.4.3"
+version = "0.5.0"
 dependencies = [
  "anyhow",
  "portal-pc-waffle",
@@ -482,7 +482,7 @@ dependencies = [
 
 [[package]]
 name = "waffle-trie"
-version = "0.4.3"
+version = "0.5.0"
 dependencies = [
  "anyhow",
  "portal-pc-waffle",
@@ -492,7 +492,7 @@ dependencies = [
 
 [[package]]
 name = "waffle-unistub"
-version = "0.4.3"
+version = "0.5.0"
 dependencies = [
  "portal-pc-waffle",
  "waffle-ast",
