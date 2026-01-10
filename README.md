@@ -1,13 +1,14 @@
 # more_waffle
 
 ## Description
-Project more_waffle
+Extended collection of `waffle` related crates (`waffle-ast`, `waffle-trie`, `waffle-splice`).
 
 ## Goals
-- [ ] Add project goals
+- [ ] Extend `waffle` ecosystem
+- [ ] Provide AST and Trie utilities
 
 ## Progress
-- [ ] Initial setup
+- [ ] Workspace setup
 
 ---
 *AI assisted*
